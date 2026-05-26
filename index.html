@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#123a6f" />
+    <title>JobTime Proof Web</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>JobTime Proof Web</h1>
+      <p>Suivi de recherche d'emploi et preuves locales</p>
+    </header>
+
+    <nav class="tabs" id="tabs"></nav>
+
+    <main class="container">
+      <section id="dashboard" class="view"></section>
+      <section id="session" class="view hidden"></section>
+      <section id="history" class="view hidden"></section>
+      <section id="report" class="view hidden"></section>
+      <section id="settings" class="view hidden"></section>
+    </main>
+
+    <script src="app.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./service-worker.js").then((reg) => {
+            reg.update();
+          }).catch(() => {});
+        });
+      }
+    </script>
+  </body>
+</html>
