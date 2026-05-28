@@ -523,6 +523,32 @@ function renderReport() {
   const byPlatform = {};
   filtered.forEach(s => byPlatform[s.platform] = (byPlatform[s.platform] || 0) + (s.durationSeconds || 0));
   const reportDate = new Date().toLocaleString("fr-FR");
+  const countUrls = (proofs) => (proofs || []).filter(p => p.type === "url" && p.url).length;
+  const countImages = (proofs) => (proofs || []).filter(p => p.type === "image").length;
+  const countPdfs = (proofs) => (proofs || []).filter(p => p.type === "pdf").length;
+  const renderUrlLinks = (proofs) => {
+    const urls = (proofs || []).filter(p => p.type === "url" && p.url);
+    if (!urls.length) return `<span class="small">-</span>`;
+    return urls.map(p => `<div class="small"><a class="link" href="${p.url}" target="_blank" rel="noopener">${p.url}</a></div>`).join("");
+  };
+  const renderProofSummary = (proofs) => {
+    const images = countImages(proofs);
+    const pdfs = countPdfs(proofs);
+    const urls = countUrls(proofs);
+    return `${images} image(s), ${pdfs} PDF, ${urls} URL`;
+  };
+  const renderProofMedia = (proofs) => {
+    const images = (proofs || []).filter(p => p.type === "image" && p.dataUrl);
+    const pdfs = (proofs || []).filter(p => p.type === "pdf");
+    const imageHtml = images.map((p, i) =>
+      `<img src="${p.dataUrl}" alt="preuve ${i + 1}" style="max-width:72px;max-height:52px;border:1px solid #dbe4f1;border-radius:6px;margin:2px" />`
+    ).join("");
+    const pdfHtml = pdfs.map(p =>
+      `<div class="small">📄 ${p.fileName || "PDF"}${p.dataUrl ? ` - <a class="link" href="${p.dataUrl}" target="_blank" rel="noopener">Ouvrir</a>` : ""}</div>`
+    ).join("");
+    if (!imageHtml && !pdfHtml) return `<span class="small">-</span>`;
+    return `<div>${imageHtml}</div>${pdfHtml ? `<div style="margin-top:4px">${pdfHtml}</div>` : ""}`;
+  };
 
   document.getElementById("report").innerHTML = `
     <div class="card no-print">
@@ -559,7 +585,10 @@ function renderReport() {
             <th>Action</th>
             <th>Durée</th>
             <th>Postulé</th>
+            <th>URLs</th>
             <th>Preuves</th>
+            <th>Médias</th>
+            <th>Notes</th>
           </tr>
         </thead>
         <tbody>
@@ -570,9 +599,12 @@ function renderReport() {
               <td>${s.actionType}</td>
               <td>${hms(s.durationSeconds || 0)}</td>
               <td>${s.didApply ? "Oui" : "Non"}</td>
-              <td>${(s.proofs || []).length}</td>
+              <td>${renderUrlLinks(s.proofs || [])}</td>
+              <td>${renderProofSummary(s.proofs || [])}</td>
+              <td>${renderProofMedia(s.proofs || [])}</td>
+              <td>${s.notes ? s.notes.replaceAll("<", "&lt;") : "-"}</td>
             </tr>
-          `).join("") || `<tr><td colspan="6">Aucune session sur la période.</td></tr>`}
+          `).join("") || `<tr><td colspan="9">Aucune session sur la période.</td></tr>`}
         </tbody>
       </table>
     </div>
